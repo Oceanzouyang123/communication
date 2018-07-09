@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title></title>
+<!-- Bootstrap Core CSS -->
+<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+<!-- MetisMenu CSS -->
+<link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+<!-- Custom CSS -->
+<link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+<!-- Custom Fonts -->
+<!--link href="//netdna.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet"-->
+<link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+</head>
+<body>
+	<div id="tableContent"></div>
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<script type="text/javascript">
+$(function(){
+	getTable();
+});
+
+function getTable(){
+	$.ajax({
+		url :"/testnosql",
+		type:"post",
+		success :function(result){
+			var parsedJson = jQuery.parseJSON(result); 
+			for(var i=0,l=parsedJson.length;i<l;i++){
+				for(var key in parsedJson[i]){
+					console.log(key+':'+parsedJson[i][key]);
+				}
+				console.log("----------");
+			} 
+		}
+	});
+}
+</script>
+</html>

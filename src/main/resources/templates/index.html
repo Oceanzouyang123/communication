@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>首页</title>
+    <style type="text/css">
+    	.dowebok { width: 790px; height: 200px; margin: 1px auto; font-size: 14px;}
+		.dowebok ul { margin: 0; line-height: 30px;}
+		.dowebok a { color: #333; text-decoration: none;}
+		.dowebok a:hover { text-decoration: underline;}
+    </style>
+    <link th:href="@{/css/liMarquee.css}" rel="stylesheet">
+    <!-- Bootstrap Core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+    	<!-- Navigation引入头部公共页面 -->
+		<div th:include="head :: headContent"></div>
+		<!-- 左侧导航栏引入 -->
+		<div th:include="sidebar :: sidebarContent"></div>
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">首页</h1>
+                </div>
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+ 						<div class="panel-heading">
+                                                               需求
+                        </div>
+						<div class="dowebok" style="background-color: white;">
+                         	<h2 id="h2" style="padding-left: 20px;"> 
+                            </h2>
+                        	<div class="panel-body">                          
+                        	</div>
+                    	</div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                                                               任务                               
+                        </div>
+                        <div class="dowebok" style="background-color: white;">
+                         	<h2 id="h3" style="padding-left: 20px;"> 
+                            </h2>
+                        	<div class="panel-body">                          
+                        	</div>
+                    	</div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                                                              知识库
+                        </div>
+                        <div class="dowebok" style="background-color: white;">
+                         	<h2 id="h4" style="padding-left: 20px;"> 
+                            </h2>
+                        	<div class="panel-body">                          
+                        	</div>
+                    	</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+            	<div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                                                              投诉
+                        </div>
+                        <div class="dowebok" style="background-color: white;">
+                         	<h2 id="h5" style="padding-left: 20px;"> 
+                            </h2>
+                        	<div class="panel-body">                          
+                        	</div>
+                    	</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<script th:src="@{/js/jquery.liMarquee.js}"></script>
+<script type="text/javascript">
+
+$(function(){
+	$('.dowebok').liMarquee({
+		direction: 'down',
+		scrollamount: 20		
+	});
+	getRemand();//查询最新需求
+	getInfo();//查询任务
+	getKnowledge();//知识库
+	getComplaint();//投诉
+})
+
+//查询最新需求
+function getRemand(){
+	$.ajax({
+		url: "/getRemand",
+		type:"post",
+		success: function(result){
+			var remandList = "";
+			$.each(result[0].data, function (i, n){
+				console.log(n.tablecn+"--"+n.type);	
+				remandList = remandList + "<h4 style='cursor:pointer;' onclick='getDemandById(\""+n.tablepy+"\")'>"+n.tablecn+"</h4>";
+				$("#h2").html(remandList);
+			});
+			
+		}
+	});
+}
+
+//查询任务
+function getInfo(){
+	$.ajax({
+		url: "/getInfo",
+		type:"post",
+		success: function(result){
+			var infoList = "";
+			$.each(result[0].data, function (i, n){
+				//console.log(n.tablecn+"--"+n.type);	
+				infoList = infoList + "<h4 style='cursor:pointer;' onclick='getInfoById(\""+n.tablepy+"\")'>"+n.tablecn+"</h4>";
+				$("#h3").html(infoList);
+			});
+			
+		}
+	});
+}
+
+//查询知识库
+function getKnowledge(){
+	$.ajax({
+		url: "/getKnowledge",
+		type:"post",
+		success: function(result){
+			var knowledgeList = "";
+			$.each(result[0].data, function (i, n){
+				//console.log(n.id+"--"+n.title);	
+				knowledgeList = knowledgeList + "<h4 style='cursor:pointer;' onclick='getKnowledgeById(\""+n.id+"\")'>"+n.title+"</h4>";
+				$("#h4").html(knowledgeList);
+			});
+			
+		}
+	});
+}
+
+//投诉
+function getComplaint(){
+	$.ajax({
+		url: "/getComplaint",
+		type:"post",
+		success: function(result){
+			var complaintList = "";
+			$.each(result[0].data, function (i, n){
+				//console.log(n.id+"--"+n.content);
+				if(n.content.length>15){
+					complaintList = complaintList + "<h4 style='cursor:pointer;' onclick='getComplaintById(\""+n.content+"\")'>"+n.content.substring(0,15)+"...</h4>";
+				}else{
+					complaintList = complaintList + "<h4 style='cursor:pointer;' onclick='getComplaintById(\""+n.content+"\")'>"+n.content+"</h4>";
+				}			
+				$("#h5").html(complaintList);
+			});
+			
+		}
+	});
+}
+
+function getDemandById(tablepy){
+	location.href="/demandTableDetial?tablename="+tablepy;
+}
+
+function getInfoById(tablepy){
+	location.href="/infoTableDetial?tablename="+tablepy;
+}
+
+function getKnowledgeById(id){
+	window.open("/queryKnowledge?knowledgeId="+id);
+}
+
+function getComplaintById(content){
+	location.href="/ComplaintHtml";
+}
+</script>
+</html>

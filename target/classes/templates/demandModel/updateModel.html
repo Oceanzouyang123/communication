@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>tablelist</title>
+    <!-- Bootstrap Core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link th:href="@{/css/dataTables.bootstrap.css}" rel="stylesheet">
+    <!-- DataTables Responsive CSS -->
+    <link th:href="@{/css/dataTables.responsive.css}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+    <style type="text/css">
+    	/* table{
+    		table-layout:fixed;
+    	} */
+    </style>	   
+</head>
+
+<body>
+    <div id="wrapper">
+		<!-- Navigation引入头部公共页面 -->
+		<div th:include="head :: headContent"></div>
+		<!-- 左侧导航栏引入 -->
+		<div th:include="sidebar :: sidebarContent"></div>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">模板表单明细</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+							数据查询结果
+							<button class="btn btn-default" id="histroy">返回</button>
+							<!--button class="btn btn-default" id="add">新增</button>
+							<a style='cursor:pointer;' onclick='selectAll();'>全选</a>&nbsp;&nbsp;<a style='cursor:pointer;' onclick='unselectAll();'>全不选</a>&nbsp;&nbsp;<a style='cursor:pointer;' onclick='rselectAll();'>反选</a-->
+							<input type="text" id="dept" style="display:none;"></input>
+							<input type="text" id="chooseValue" style="display:none;"></input>
+							<a id="getTablecn" th:text="${tablecn}" style="display:none;"></a>
+							<a id="getType" th:text="${type}" style="display:none;"></a>
+							<!--button class="btn btn-default" id="batchAdd">批量新增</button-->
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body" id="tableContent">
+                            <!--table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+                            </table-->
+                        </div>            
+                    </div>
+        <!-- 月结算清单分页列表 -->
+  		<div style="padding-top: 10px;margin-left: 1%;width:60%;display:none;" id="pager">
+			<button class="btn btn-default" id="billshouye" style="cursor: pointer;">首页</button>
+			<button class="btn btn-default" id="billfront" style="cursor: pointer;">上一页</button>
+			<button class="btn btn-default" id="billnext" style="cursor: pointer;">下一页</button>
+			<button class="btn btn-default" id="billweiye" style="cursor: pointer;">尾页</button>
+			&nbsp;
+			<label class="billdangqian"></label>
+			<label class="billgong"></label>
+			<label class="billNum"></label>
+		</div>	
+  		<div style="display: none;">
+			<input type="text" id="billcountPage" value="15"></input>
+			<input type="text" id="billcurrentPage" value="1"></input>
+		</div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<script type="text/javascript">
+var count = 0;//
+var addCount = 0;//新增的行数统计
+var columnNameValue = "";//拼音列名集合
+var tablepy = "";//拼音表名 
+var status = "";//状态
+var role = "";//执行部门
+var dept = "";//可见部门
+var billList = "";
+var billTitle = "";
+var onlyJson = "";//判断字段读写或只读
+var updateLog = "";//记录修改内容日志
+
+$(function(){
+	queryTableWorkbook();
+})
+  	
+    //根据表名查询表(需要查询字典表和tablename表拼接)
+    function queryTableWorkbook(){
+    	//查询字典表
+    	$.ajax({
+    		url :"/queryModelByTablecn",
+    		type:"post",
+    		data:{tablecn:$("#getTablecn").text(),type:$("#getType").text()},
+    		async: false,
+    		success :function(result){
+    			//console.log(result[0].data[0].tablenamecn+"--获取表名");
+    			tablepy = result[0].data[0].tablenamepy;
+    			//$("#getDemandTable").val(result[0].data[0].tablenamepy);
+    			$.each(result[0].data, function (i, n){
+    				//console.log(n.tablenamepy+"--"+n.tablenamecn+"--"+n.columnnamecn+"--"+n.columnnamepy);   				
+    				if(i>3){
+    					count++;
+    					billTitle = billTitle+"<td>"+n.columnnamecn+"</td>";
+    					columnNameValue = columnNameValue + n.columnnamepy+",";
+    				}    				
+    			});
+    			columnNameValue = columnNameValue.substring(0,columnNameValue.length-1);
+    			billTitle = "<tr><td>序号</td><td>状态</td>"+billTitle+"<td>操作</td></tr>";
+    			$("#tableContent").html("<table class='table table-striped table-bordered table-hover' id='modelTable'>"+billTitle+"</table>");
+    			//获取该表的状态、可见部门和执行部门
+    			queryTable();//查询表数据
+    		}
+    	});
+    }
+
+$("#add").click(function(){
+	var tableContent = $("#tableContent").html();
+	var td = "";
+	addCount++;
+	for(var i=0;i<count;i++){		
+		td = td+"<td><textarea style='width:100px;' type='text' class='"+addCount+"'></textarea></td>";
+	}
+	td = "<tr><td style='width:20px;'><input type='checkbox' id='"+addCount+"' class='selectBox'></input></td>"+td+"<td><a style='cursor:pointer;' name='"+addCount+"' onclick='insertModel("+addCount+");'>修改</a></td></tr>";
+	$("#modelTable").append(td);
+});
+
+//全选checkbox
+function selectAll(){
+	$(".selectBox").each(function(){
+		//$(this).attr("checked",true);
+	    this.checked=true;
+  	});
+}
+//全不选checkbox
+function unselectAll(){
+	$(".selectBox").each(function(){
+		//$(this).attr("checked",true);
+		this.checked=false;
+  	});
+}
+//反选checkbox
+function rselectAll(){
+	$(".selectBox").each(function(){  
+		if(this.checked==true){
+			this.checked=false;
+		}else if(this.checked==false){
+			this.checked=true;
+		}
+    }); 
+	
+}
+
+
+//单个模板修改
+function updateModel(count){
+	var values = "";
+	$("#modelTable td").each(function(i, v){
+		//alert($(this).find("textarea").attr("class"));		
+		if($(this).find("textarea").attr("class")==count){
+			//alert($(this).find("textarea").val());
+			values = values + $(this).find("textarea").val() +",";
+		}				
+	});
+	//alert($("."+count).val());
+	values = values.substring(0,values.length-1);
+	var sql = "insert into "+tablepy+"(versionControl,status,role,dept,"+columnNameValue+") values(1,'发起','"+role+"','"+dept+"',"+values+")";
+	//alert(sql);
+	$.ajax({
+		url:"/updateModelDemand",
+		type:"post",
+		data:{sql:sql},
+		success: function(result){
+			//alert("新增成功~~");
+			//window.location.reload();
+			$("#modelTable td").each(function(i, v){
+				if($(this).find("a").attr("name")==count){
+					//alert($(this).find("a").attr("name"));
+					//隐藏已经新增行的新增按钮
+					$(this).find("a").hide();
+				}
+			});
+			
+		}
+	});
+}
+
+
+//查询表中数据
+function queryTable(){
+	var countid = -1;
+	$.ajax({
+		url :"/queryDemandTable",
+		type:"post",
+		data:{tablename:tablepy},
+		success :function(result){
+			var idValue = 1;
+			var versionController = "";
+			var parsedJson = jQuery.parseJSON(result); 
+			var roleDept = "";			
+			for(var i=0,l=parsedJson.length;i<l;i++){
+				countid++;
+				if(i==0){
+					for(var key in parsedJson[0]){						
+						if(parsedJson[0][key].indexOf("只读")>=0){
+							//console.log(key+':'+parsedJson[0][key]+"==");
+							onlyJson = onlyJson +"\""+ key+"\":\""+parsedJson[0][key]+"\",";
+						}
+					}
+					if(onlyJson.length>0){
+						onlyJson = "{"+onlyJson.substring(0,onlyJson.length-1)+"}";
+					}
+				}else{
+					for(var key in parsedJson[i]){
+						//console.log(key+':'+parsedJson[i][key]+"==");
+						if(key=="role"){
+							roleDept = parsedJson[i][key];
+						}
+						if(parsedJson[i][key]=="是"){
+							//alert(key);
+							billList =billList+"<td name="+idValue+" class="+key+idValue+"><input type='radio' value='是' name='"+key+"' checked>是</input>    <input type='radio' value='否' name='"+key+"'>否</input></td>";
+						}else if(parsedJson[i][key]=="否"){
+							billList =billList+"<td name="+idValue+" class="+key+idValue+"><input type='radio' value='是' name='"+key+"'>是</input>    <input type='radio' value='否' name='"+key+"' checked>否</input></td>";
+						}else if(key=="versionControl"){
+							versionController = parsedJson[i][key];
+						}else if(key.indexOf("dept")>=0){
+							
+						}else if(key.indexOf("role")>=0){
+							
+						}else{
+							if(key=="id"){
+								idValue = parsedJson[i][key];
+								billList =billList+"<td name="+idValue+" class="+key+">"+countid+"</td>";				
+							}else{
+								billList =billList+"<td name="+idValue+" class="+key+idValue+">"+parsedJson[i][key]+"</td>";
+							}
+						}			
+					}	
+					billList = "<tr>"+billList+"<td style='cursor:pointer;'><a onclick='update("+versionController+","+idValue+");'>修改</a></td>"+"</tr>";
+				}				
+			} 
+			billList = billTitle+"<tbody>"+billList+"</tbody>";//拼接表内容	
+			$("#tableContent").html("<table id='table' class='table table-striped table-bordered table-hover'>"+billList+"</table>");
+		    
+			//双击编辑		    
+		    $("#table").find("td").bind("dblclick",function(){ 
+		    	var readonly = 0;
+		    	var classz = $(this).attr("class");
+		    	//判断当前参数是否读写或只读
+		    	/* if(onlyJson.length>0){
+		    		var objJson= jQuery.parseJSON(onlyJson);		    	
+			    	$.each(objJson,function(name,value) {
+			    		if(classz.indexOf(name)>=0){
+			    			readonly=1;
+			    			alert("当前参数只读，不可修改~~");	    			
+			    		}
+			    	});
+		    	}		    	
+		    	if(readonly==1){
+		    		return false;
+		    	} */
+		    	var id = $(this).attr("name");
+		        var input ="<input type='text' id='temp"+id+"' value="+$(this).text()+">";
+		        var select = "<select id='status"+id+"' style=''></select>";
+		        var selectRole = "<select id='role"+id+"' style=''></select>";
+		        var businessstatus = $(this).text();  
+		        var oldContent = $(this).text();
+		        //alert($(this).text());//获取该字段的值
+		        //alert($(this).attr("class"));
+		        //权限双击编辑
+		        var role = tablepy+id; 
+		        //id、可见部门不允许编辑
+		        if($(this).attr("class")=="id"||$(this).attr("class")=="dept"){
+		        	return false;
+		        }
+		        //alert($(this).find("input").prop("type"));
+		        if($(this).find("input").prop("type")=="radio"){
+		        	return false;	
+		        }
+		        //需求状态双击编辑
+		        if($(this).attr("class")=="status"+id){
+		        	//判断权限(评审部门是否是当前登录用户所在的部门)
+		        	//待修改，改成获取当前按钮的前一个td的text值
+		        	//alert($("#userDept").val()+"=="+$(".role"+id).text());
+		        	$(this).text(""); 
+    		        $(this).append(select);
+    		        $("select#status"+id).focus(); 
+    		        $.ajax({
+    		        	url:"/queryBusiness",
+    		        	type:"post",
+    		        	success: function(result){
+    		        		$("#status"+id).empty(); 
+    		        		$("#status"+id).append("<option value=''></option>");
+    		        		$.each(result[0].data, function (i, n)
+    		        	    {
+    		        	    	$("#status"+id).append("<option value="+n.businessstatus+">"+n.businessstatus+"</option>");
+    		        	    });
+    		        		if(businessstatus==""){
+    		        				
+    		        		}else{
+    		        			$("#status"+id).find("option:contains("+businessstatus+")").attr("selected",true);
+    		        		}   			
+    		        	}
+    		        });
+    		      	//判断当前记录状态status
+    		    	$("."+classz).change(function(){
+    		    		if(oldContent!=$("#"+classz).val()){
+    		    			console.log(classz+"--"+oldContent+"=="+$("#"+classz).val());
+    		    			updateLog = updateLog + " '"+oldContent +"'=>'"+ $("#"+classz).val()+"'";
+    		    		}   	
+    		        });
+		        }else if($(this).attr("class")=="role"+id){
+		        	$(this).text(""); 
+		        	$(this).append(selectRole);
+		        	$("select#role"+id).focus(); 
+		        	$.ajax({
+		        		url:"/queryDept",
+		        		type:"post",
+		        		success: function(result){
+		        			$("#role"+id).empty(); 
+		        			$("#role"+id).append("<option value=''></option>");
+		        			$.each(result[0].data, function (i, n)
+		        	    	{
+		        	    		$("#role"+id).append("<option value="+n.name+">"+n.name+"</option>");
+		        	    	});
+		        			if(businessstatus==""){
+		        				
+		        			}else{
+		        				$("#role"+id).find("option:contains("+businessstatus+")").attr("selected",true);
+		        			}   			
+		        		}
+		        	});
+		        }else{
+		        	$(this).text("");      		        
+    		        $(this).append(input);  
+    		        $("input#temp"+id).focus();  
+    		        $("input").blur(function(){      		        	 
+    		        	if($(this).val()==""){  
+    		            	//$(this).remove();  
+    		        	}else{     		        		
+    		        		$(this).closest("td").text($(this).val());
+    		        	}  
+    		        	//判断是否修改了内容
+    		        	if(oldContent!=$(this).val()){
+    		        		console.log(oldContent+"=="+$(this).val());
+    		        		updateLog = updateLog + " '"+oldContent+"'=>'"+$(this).val()+"'";
+    		        	}
+    		    	});
+		        }   		          
+		    });
+		}
+	}); 
+}
+
+//提交修改
+function update(versionControl,getId){
+	//alert(versionControl+"=="+getId);
+	var updateCount = 0;
+	var values = "";
+	var updateSql = "";
+	$("#table td").each(function(i, v){
+		//alert($(this).find("input").attr("name"));		
+		if($(this).attr("name")==getId){
+			if(updateCount>0){
+				if($(this).attr("class").indexOf("status")>=0){
+					//alert($("#status"+getId).text()+"=="+$("#status"+getId).val()+"=="+$(".status"+getId).text()+"=="+$(".status"+getId).val());
+					if($("#status"+getId).val()==null||$("#status"+getId).val()==""){
+						//alert($(".status"+getId).text());
+						values = values + $(".status"+getId).text()+"ψ";
+					}else{
+						//alert($("#status"+getId).val());
+						values = values + $("#status"+getId).val()+"ψ";
+					}
+					//values = values + $(this).text();
+				}else{
+					values = values + $(this).text()+"ψ";
+				}
+			}
+			//values = values + $(this).find("textarea").val() +",";
+			updateCount ++;
+		}				
+	});
+	//拼接update的set参数集合
+	values = values.substring(0,values.length-1);	
+	var valuesSplit = values.split("ψ");
+	var columnNameSplit = columnNameValue.split(",");
+	//alert(columnNameValue+"=="+values);
+	for(var i=1;i<valuesSplit.length;i++){
+		updateSql = updateSql+columnNameSplit[i-1]+"='"+valuesSplit[i]+"',";
+		//console.log(i);
+	}
+	updateSql = "status='"+valuesSplit[0]+"',"+updateSql;
+	updateSql = updateSql.substring(0,updateSql.length-1);
+	//alert("updateSql=="+updateSql);
+	//修改数据
+	$.ajax({
+		url:"/updateModelDemandById",
+		type:"post",
+		data:{tablename:tablepy,canshu:updateSql,id:getId,version:versionControl,updateLog:updateLog},
+		success: function(result){
+			if(result==0){
+				alert("不是最新数据,更新数据~~");
+				window.location.reload();
+			}else{
+				alert("修改成功~~");
+				window.location.reload();
+			}
+		}
+	});
+}
+
+//返回
+$("#histroy").click(function(){
+	location.href="/demandModelHtml";
+});
+</script>
+</html>

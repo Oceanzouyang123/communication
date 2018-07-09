@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的 -->
+<mapper namespace="com.mybatis.mapper.UserDao">
+    
+    <!-- 添加数据 -->
+    <insert id="insertUser" parameterType="com.mybatis.entity.User">
+        insert into users(userid,dept,status) value(#{userId},#{dept},#{status})
+    </insert>
+    
+    <!-- 根据id删除数据 -->
+    <delete id="del" parameterType="int">
+        delete from users where id = #{id}
+    </delete>
+    
+    <!-- 删除所有数据  -->
+     <delete id="delall">
+        delete from users
+    </delete>
+    
+    <!-- 修改数据 -->
+    <update id="update" parameterType="com.mybatis.entity.User">
+        update users set dept=#{dept} where id=#{id}
+    </update>
+    
+    <!--根据id查询得到一个User对象 -->
+    <select id="getUser" parameterType="int" resultType="com.mybatis.entity.User">
+        select id,userid,dept from users where id=#{id}
+    </select>
+    
+    <!--根据部门名称模糊查询得到一个User对象 -->
+    <select id="getDeptByName" resultType="com.mybatis.entity.User">
+        select DISTINCT(dept) from users where 1=1
+        <if test="dept != null and dept !=''">        	
+        	and dept like "%"#{dept}"%"
+        </if>
+    </select>
+       
+    <!--根据userId查询得到一个User对象 -->
+    <select id="getUserByUserId" resultType="com.mybatis.entity.User">
+        select id,userid,dept from users where userid=#{userId}
+    </select>
+    
+    <!-- 计算有多少记录  -->
+    <select id="getCountSqlwhere" parameterType="com.mybatis.entity.User" resultType="int">
+    	select count(*) from users where 1=1
+    	<if test="userId != null and userId !=''">        	
+        	and userid like "%"#{userId}"%"
+        </if>  
+        <if test="dept != null and dept !=''">
+        	and dept like "%"#{dept}"%"	
+        </if>
+    </select>
+    
+    <!-- 查询所有的数据 -->
+    <select id="getUserList" resultType="com.mybatis.entity.User">
+        select id,userid,dept from users       
+    </select>
+    
+    <!-- 批量插入 -->
+    <insert id="insertBatch">
+    	INSERT INTO users(userid,dept,status)VALUES
+    	<foreach collection ="list" item="user" separator =",">
+         	(#{user.userId},#{user.dept},#{user.status})
+    	</foreach >
+	</insert>
+	
+	<!-- 根据部门类别查询用户  -->
+	<select id="getDept" resultType="com.mybatis.entity.User">
+		select DISTINCT(dept),userid from users
+	</select>	
+	
+	<!-- 分页  -->
+	<select id="getUserPager" resultType="com.mybatis.entity.User">
+        select id,userid,dept from users where id >= (select id FROM users ORDER BY id LIMIT #{0}, 1) LIMIT #{1}       
+    </select>
+	
+	<!-- 分页+判断条件  -->
+	<select id="getUserPagerContent" resultType="com.mybatis.entity.User">
+        select * from users where 1=1
+        <if test="userId != null and userId !=''">        	
+        	 and userid like "%"#{userId}"%"
+        </if>
+        <if test="dept != null and dept !=''">        	
+        	 and dept like "%"#{dept}"%"
+        </if>
+         <!-- and id>= (select id FROM monthbill ORDER BY id LIMIT #{rowStart}, 1) LIMIT #{pageSize} --> 
+         limit #{rowStart},#{pageSize}   
+    </select>
+	
+	<!-- 判断条件搜索  -->
+	<select id="getUserSqlWhere" resultType="com.mybatis.entity.User">
+        select id,userid,dept from users       
+        	where 1=1
+        <if test="userId != null and userId !=''">        	
+        	and userid like "%"#{userId}"%"	
+        </if>  
+        <if test="dept != null and dept !=''">
+        	and dept like "%"#{dept}"%"	
+        </if>       
+    </select>
+	
+	<!-- 存储过程   -->
+	<select id="getUserProcedure" statementType="CALLABLE" parameterType="com.mybatis.entity.User" resultType="com.mybatis.entity.User">
+        <![CDATA[  
+    		{call getMonthBillByid
+    		(
+    		#{id},
+    		#{billno}
+    		)}  
+		]]>  
+    </select>
+</mapper>

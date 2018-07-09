@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的 -->
+<mapper namespace="com.mybatis.mapper.BusinessDao">
+
+	<!-- 根据id查询业务流程信息 -->
+	<select id="getBusinessById" parameterType="int" resultType="com.mybatis.entity.Business">
+        select id,businessstatus from business where id=#{id}
+    </select>
+    
+    <!-- 查询所有流程信息  -->
+    <select id="getBusinessList" resultType="com.mybatis.entity.Business">
+        select id,businessstatus from business       
+    </select>
+    
+	<!-- 添加数据 -->
+    <insert id="insertBusiness" parameterType="com.mybatis.entity.Business">
+        insert into business(businessstatus) value (#{businessstatus})
+    </insert>
+    
+    <!-- 修改流程信息 -->
+    <update id="updateBusiness" parameterType="com.mybatis.entity.Business">
+        update business set businessstatus=#{businessstatus} where id=#{id}
+    </update>
+    
+    <!-- 根据id删除数据 -->
+    <delete id="delBusiness" parameterType="int">
+        delete from business where id = #{id}
+    </delete>
+    
+</mapper>

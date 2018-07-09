@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>manageComplaint</title>
+    <!-- Bootstrap Core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link th:href="@{/css/dataTables.bootstrap.css}" rel="stylesheet">
+    <!-- DataTables Responsive CSS -->
+    <link th:href="@{/css/dataTables.responsive.css}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+		<!-- Navigation引入头部公共页面 -->
+		<div th:include="head :: headContent"></div>
+		<!-- 左侧导航栏引入 -->
+		<div th:include="sidebar :: sidebarContent"></div>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">投诉管理</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                        	新增投诉信息
+                        	<input type="text" id="complaintId" style="display:none;"></input>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body" >
+                            <div class="row">
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">
+                            			<lable>投诉人:&nbsp;&nbsp;&nbsp;&nbsp;</lable>
+                            			<lable th:text="${userid}" id="getUserId"></lable>
+                            		</div>
+                            		<br/>
+                            	</div>                            	
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">
+                            			<lable>投诉内容</lable>:
+                            			<textarea class="form-control" id="content" style="width:500px;height: 200px;"></textarea>
+                            		</div>
+                            		<br/>
+                            	</div>                            	
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">
+                            			<lable>类型:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</lable>
+                            			<select id="type" class="form-control"> 
+                            				<option value="公开">公开</option>
+                            				<option value="匿名">匿名</option>
+                            			</select>
+                            		</div>
+                            		<br/>
+                            	</div>
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">
+                            			<lable>权限:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</lable>
+                            			<div class="form-control" id="dept"></div>
+                            		</div>
+                            		<br/>
+                            	</div>
+                            </div>
+                            <br/>
+                            <div class="col-lg-7">
+                            	<button class="btn btn-default" id="btn" type="submit">提交</button>
+                            	<button class="btn btn-default" id="reset" type="reset">重置</button>
+                            </div>
+                        </div>                      
+                    </div>	
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<!-- DataTables JavaScript -->
+<script th:src="@{/js/jquery.dataTables.min.js}"></script>
+<script th:src="@{/js/dataTables.bootstrap.min.js}"></script>
+<script th:src="@{/js/dataTables.responsive.js}"></script>
+<script type="text/javascript">
+$(function(){
+	//查询投诉
+	//pager();//获取修改投诉信息
+    getDept();//获取部门信息
+})
+    
+	//获取所有部门信息 
+    function getDept(){
+    	$.ajax({
+    		url:"/queryDept",
+    		type:"post",
+    		success: function(result){
+    			$("#dept").empty(); 
+    			//$("#dept").append("");
+    			$.each(result[0].data, function (i, n)
+    	    	{
+    				$("#dept").append("<input class='role' type='checkbox' value='"+n.name+"'>"+n.name+"</input>");
+    	    		//$("#dept").append("<option value="+n.name+">"+n.name+"</option>");
+    	    	});
+    		}
+    	});
+    }
+    
+    //查询所有部门信息
+    function pager(){
+    	$.ajax({
+    		url :"/queryDeptById",
+    		type:"post",
+    		success :function(result){
+     			$.each(result[0].data, function (i, n){
+     				$("#deptId").val(n.id);
+     				$("#name").val(n.name);
+    				console.log(n.name);   				 				
+    			});
+    		}
+    	});
+    }
+
+    //重置
+    $("#reset").click(function(){
+    	window.location.reload();
+    });
+    
+    //提交
+    $("#btn").click(function(){
+    	var dept = "";
+    	$(".role").each(function(){
+    		if($(this).prop('checked')){
+    			dept = dept + $(this).val()+",";
+    		}    		
+    	});
+    	if(dept==""){
+    		alert("请至少选择一个部门~~");
+    		return false;
+    	}
+    	dept = dept.substring(0,dept.length-1);
+    	var nickname = "";
+    	//如果匿名投诉，则nickname使用'匿名'
+    	if($("#type").val()=="匿名"){
+    		nickname = $("#type").val();
+    	}else{
+    		nickname = $("#getUserId").text();
+    	}
+    	if($("#complaintId").val()==""){
+    		$.ajax({
+    			url:"/insertComplaint",
+    			type:"post",
+    			data:{userid:$("#getUserId").text(),content:$("#content").val(),type:$("#type").val(),nickname:nickname,dept:dept},
+    			success :function(result){
+    				if(result==1){
+    					location.href="/ComplaintHtml";
+    				}
+    			}
+    		});
+    	}else{
+    		$.ajax({
+    			url:"/updateComplaint",
+    			type:"post",
+    			data:{content:$("#content").val(),id:$("#complaintId").val()},
+    			success :function(result){
+    				if(result==1){
+    					location.href="/deptHtml";
+    				}
+    			}
+    		});
+    	}   	
+    });
+</script>
+</html>

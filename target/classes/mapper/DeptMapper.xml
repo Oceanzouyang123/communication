@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的 -->
+<mapper namespace="com.mybatis.mapper.DeptDao">
+
+	<!-- 根据id查询部门信息 -->
+	<select id="getDeptById" parameterType="int" resultType="com.mybatis.entity.Dept">
+        select id,name,userid from dept where id=#{id}
+    </select>
+    
+    <!-- 查询所有部门信息  -->
+    <select id="getDeptList" resultType="com.mybatis.entity.Dept">
+        select id,name,userid from dept       
+    </select>
+    
+	<!-- 添加数据 -->
+    <insert id="insertDept" parameterType="com.mybatis.entity.Dept">
+        insert into dept(name) value (#{name})
+    </insert>
+    
+    <!-- 修改部门信息 -->
+    <update id="updateDept" parameterType="com.mybatis.entity.Dept">
+        update dept set name=#{name} where id=#{id}
+    </update>
+    
+    <!-- 根据id删除数据 -->
+    <delete id="delDept" parameterType="int">
+        delete from dept where id = #{id}
+    </delete>
+    
+</mapper>

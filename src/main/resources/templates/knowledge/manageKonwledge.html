@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>manageKnowledge</title>
+<link rel="stylesheet" type="text/css" href="http://www.jq22.com/jquery/font-awesome.4.6.0.css">
+<link th:href="@{/css/froala_editor.min.css}" rel="stylesheet">  
+<link th:href="@{/css/froala_page.min.css}" rel="stylesheet">
+<style>
+	body{
+    	text-align:center;
+    }
+    table{
+    	width:80%;
+        margin:auto;
+        text-align:left;
+    }
+    .reddot{
+    	color:red;
+    }
+    .btn {
+    	display: inline-block;
+    	padding: .3em .5em;
+    	background-image: linear-gradient(#f5c153, #ea920d);
+    	border: 1px solid rgba(0,0,0,.2);
+    	border-radius: .3em;
+    	box-shadow: 0 1px white inset;
+    	text-align: center;
+    	text-shadow: 0 1px 1px black;
+    	color:white;
+    	font-weight: bold;
+    	cursor: pointer;
+	}
+	.btn:active{
+    	box-shadow: .05em .1em .2em rgba(0,0,0,.6) inset;
+    	border-color: rgba(0,0,0,.3);
+    	background: #bbb;
+	} 
+</style>
+</head>
+<body>
+	<div style="height: 50px;font-size: 20px;">
+		编辑知识
+		<a th:text="${knowledgeId}" id="getKnowledgeId" style="display:none;"></a>
+		<a th:text="${userid}" id="getUserId" style="display:none;"></a>		
+	</div>
+	<table>
+		<tr>
+			<td>
+				<span class="reddot">*</span>
+				标题:
+			</td>
+			<td>
+				<input type="text" id="title"></input>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<span class="reddot">*</span>
+				关键字:
+			</td>
+			<td>
+				<input type="text" id="keyword"></input>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+				<span class="reddot">*</span>
+				内容说明:
+			</td>
+			<td>
+				<section id="editor">
+      				<div id='edit' style="margin-top: 1px;">
+      				</div>
+    			</section>
+			</td>
+		</tr>	
+		<tr>
+			<td>上传文件:</td>
+			<td>
+				<form name="form1" id="fileUploadForm" method="post" enctype="multipart/form-data">
+					<input class="input-prepend" type="file" name="file" id="file" multiple="multiple">
+					<input type="submit" id="upload" value="上传到服务器" onclick="return check()" style="display:none;">
+				</form>
+			</td>
+		</tr>	
+		<tr>
+			<td>发布人:</td>
+			<td>
+				<lable id="author"></lable>				
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td>
+				<div class="btn">提交</div>
+				<input type="button" value="获取图片路径" id="getSrc" style="display:none;"></input>
+			</td>
+		</tr>
+	</table>
+</body>
+<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script th:src="@{/js/froala_editor.min.js}"></script>
+<script th:src="@{/js/plugins/tables.min.js}"></script>
+<script th:src="@{/js/plugins/lists.min.js}"></script>
+<script th:src="@{/js/plugins/colors.min.js}"></script>
+<script th:src="@{/js/plugins/media_manager.min.js}"></script>
+<script th:src="@{/js/plugins/font_family.min.js}"></script>
+<script th:src="@{/js/plugins/font_size.min.js}"></script>
+<script th:src="@{/js/plugins/block_styles.min.js}"></script>
+<script th:src="@{/js/plugins/video.min.js}"></script>
+<script type="text/javascript">
+	$(function(){
+		var userid = $("#getUserId").text();
+		$('#edit').editable({inlineMode: false, alwaysBlank: true});
+		watermark({watermark_txt:userid});
+		$(".froala-element").css("height","500px");
+		getKonwledgeById();
+	})
+
+	//获取图片路径
+	$("#getSrc").click(function(){
+		$(".fr-fin").each(function(){
+			alert($(this).attr("src"));//获取所有图片的src路径，替换成本地上传的图片
+			$.ajax({
+				url:"/uploadimage",
+				type:"post",
+				data:{src:$(this).attr("src")},
+				success :function(result){
+					
+				}
+			});
+		});
+	});
+	
+    //提交
+    $(".btn").click(function(){
+    	//alert($(".froala-element").html());  
+    	check();//检查是否上传文件		
+    });
+	
+    //新增知识库
+    function insertKnowledge(){
+    	$.ajax({
+    		url:"/insertKnowledge",
+    		type:"post",
+    		data:{title:$("#title").val(),keyword:$("#keyword").val(),content:$(".froala-element").html()},
+    		success:function(result){
+    			if(result>0){
+    				alert("新增成功~~");
+    				location.href="/knowledgeHtml";
+    			}else{
+    				alert("新增失败~~");
+    			}
+    		}
+    	});
+    }
+    
+    //修改知识库
+    function updateKnowledge(){
+    	$.ajax({
+    		url:"/updateKnowledge",
+    		type:"post",
+    		data:{title:$("#title").val(),keyword:$("#keyword").val(),content:$(".froala-element").html(),id:$("#getKnowledgeId").text()},
+    		success:function(result){
+    			if(result>0){
+    				alert("修改成功~~");
+    				location.href="/knowledgeHtml";
+    			}
+    		}
+    	});
+    }
+    
+	//新增或查看(修改)
+	function getKonwledgeById(){
+		if($("#getKnowledgeId").text()==""){
+			//alert("新增");
+			$("#author").text($("#getUserId").text());
+		}else{
+			//alert("修改");
+			$.ajax({
+				url:"/getknowledgeById",
+				type:"post",
+				data:{id:$("#getKnowledgeId").text()},
+				success :function(result){
+					$.each(result[0].data, function (i, n){
+	     				$("#title").val(n.title);
+	     				$("#keyword").val(n.keyword);
+	     				$(".froala-element").html(n.content);
+	     				$("#author").text(n.userid);
+	    			});
+				}
+			});
+		}
+	}
+	
+	//上传文件
+	function upload(){
+		var form = $('#fileUploadForm')[0];
+	    var data = new FormData(form);
+		$.ajax({
+			type: "POST",
+	        //enctype: 'multipart/form-data',
+			url:"/batchUpload",
+			data: data,
+			processData: false,
+		    contentType: false,
+		    cache: false,
+	        timeout: 600000,
+			success:function(result){
+				if(result==0){
+					insertKnowledge();//插入数据到知识库
+				}
+			}
+		});
+	}
+	
+	//检查上传文件名是否为空
+	function check(){
+		var name = $("#file").val();
+		//alert(name);
+		if(name==""){
+			//alert("请先选择文件再导入~~");
+			if($("#getKnowledgeId").text()==""){
+				insertKnowledge();	
+			}else{
+				updateKnowledge();
+			}			
+			//return false;
+		}else{			
+			upload();//上传文件
+			//alert("上传文档成功~~");
+			return true;
+		}
+	}
+	
+	//水印 
+	function watermark(settings) {
+    debugger;
+    //默认设置
+    var defaultSettings={
+        watermark_txt:"text",
+        watermark_x:20,//水印起始位置x轴坐标
+        watermark_y:20,//水印起始位置Y轴坐标
+        watermark_rows:20,//水印行数
+        watermark_cols:20,//水印列数
+        watermark_x_space:100,//水印x轴间隔
+        watermark_y_space:50,//水印y轴间隔
+        watermark_color:'#aaa',//水印字体颜色
+        watermark_alpha:0.4,//水印透明度
+        watermark_fontsize:'15px',//水印字体大小
+        watermark_font:'微软雅黑',//水印字体
+        watermark_width:210,//水印宽度
+        watermark_height:80,//水印长度
+        watermark_angle:15//水印倾斜度数
+    };
+    //采用配置项替换默认值，作用类似jquery.extend
+    if(arguments.length===1&&typeof arguments[0] ==="object" )
+    {
+        var src=arguments[0]||{};
+        for(key in src)
+        {
+            if(src[key]&&defaultSettings[key]&&src[key]===defaultSettings[key])
+                continue;
+            else if(src[key])
+                defaultSettings[key]=src[key];
+        }
+    }
+
+    var oTemp = document.createDocumentFragment();
+
+    //获取页面最大宽度
+    var page_width = Math.max(document.body.scrollWidth,document.body.clientWidth);
+    var cutWidth = page_width*0.0150;
+    var page_width=page_width-cutWidth;
+    //获取页面最大高度
+    var page_height = Math.max(document.body.scrollHeight,document.body.clientHeight)+450;
+    // var page_height = document.body.scrollHeight+document.body.scrollTop;
+    //如果将水印列数设置为0，或水印列数设置过大，超过页面最大宽度，则重新计算水印列数和水印x轴间隔
+    if (defaultSettings.watermark_cols == 0 || (parseInt(defaultSettings.watermark_x + defaultSettings.watermark_width *defaultSettings.watermark_cols + defaultSettings.watermark_x_space * (defaultSettings.watermark_cols - 1)) > page_width)) {
+        defaultSettings.watermark_cols = parseInt((page_width-defaultSettings.watermark_x+defaultSettings.watermark_x_space) / (defaultSettings.watermark_width + defaultSettings.watermark_x_space));
+        defaultSettings.watermark_x_space = parseInt((page_width - defaultSettings.watermark_x - defaultSettings.watermark_width * defaultSettings.watermark_cols) / (defaultSettings.watermark_cols - 1));
+    }
+    //如果将水印行数设置为0，或水印行数设置过大，超过页面最大长度，则重新计算水印行数和水印y轴间隔
+    if (defaultSettings.watermark_rows == 0 || (parseInt(defaultSettings.watermark_y + defaultSettings.watermark_height * defaultSettings.watermark_rows + defaultSettings.watermark_y_space * (defaultSettings.watermark_rows - 1)) > page_height)) {
+        defaultSettings.watermark_rows = parseInt((defaultSettings.watermark_y_space + page_height - defaultSettings.watermark_y) / (defaultSettings.watermark_height + defaultSettings.watermark_y_space));
+        defaultSettings.watermark_y_space = parseInt(((page_height - defaultSettings.watermark_y) - defaultSettings.watermark_height * defaultSettings.watermark_rows) / (defaultSettings.watermark_rows - 1));
+    }
+    var x;
+    var y;
+    for (var i = 0; i < defaultSettings.watermark_rows; i++) {
+        y = defaultSettings.watermark_y + (defaultSettings.watermark_y_space + defaultSettings.watermark_height) * i;
+        for (var j = 0; j < defaultSettings.watermark_cols; j++) {
+            x = defaultSettings.watermark_x + (defaultSettings.watermark_width + defaultSettings.watermark_x_space) * j;
+
+            var mask_div = document.createElement('div');
+            mask_div.id = 'mask_div' + i + j;
+            mask_div.className = 'mask_div';
+            mask_div.appendChild(document.createTextNode(defaultSettings.watermark_txt));
+            //设置水印div倾斜显示
+            mask_div.style.webkitTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+            mask_div.style.MozTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+            mask_div.style.msTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+            mask_div.style.OTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+            mask_div.style.transform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+            mask_div.style.visibility = "";
+            mask_div.style.position = "absolute";
+            mask_div.style.left = x + 'px';
+            mask_div.style.top = y + 'px';
+            mask_div.style.overflow = "hidden";
+            mask_div.style.zIndex = "9999";
+            mask_div.style.pointerEvents='none';//pointer-events:none  让水印不遮挡页面的点击事件
+            //mask_div.style.border="solid #eee 1px";
+            mask_div.style.opacity = defaultSettings.watermark_alpha;
+            mask_div.style.fontSize = defaultSettings.watermark_fontsize;
+            mask_div.style.fontFamily = defaultSettings.watermark_font;
+            mask_div.style.color = defaultSettings.watermark_color;
+            mask_div.style.textAlign = "center";
+            mask_div.style.width = defaultSettings.watermark_width + 'px';
+            mask_div.style.height = defaultSettings.watermark_height + 'px';
+            mask_div.style.display = "block";
+            oTemp.appendChild(mask_div);
+        	};
+    	};
+    	document.body.appendChild(oTemp);
+	}
+</script>
+</html>

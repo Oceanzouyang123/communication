@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的 -->
+<mapper namespace="com.mybatis.mapper.KnowledgeDao">
+
+	<!-- 根据id查询知识库信息 -->
+	<select id="getKnowledgeById" parameterType="int" resultType="com.mybatis.entity.Knowcenter">
+        select id,title,content,keyword,filepath,userid,operatetime from knowledge where id=#{id}
+    </select>
+    
+    <!-- 计算有多少记录  -->
+    <select id="getCountSqlwhere" parameterType="com.mybatis.entity.Knowcenter" resultType="int">
+    	select count(*) from knowledge where 1=1
+    	<if test="title != null and title !=''">        	
+        	 and title like #{title}"%"
+        </if>
+        <if test="keyword != null and keyword !=''">        	
+        	 and keyword like "%"#{keyword}"%"
+        </if>
+    </select> 
+    
+    <!-- 查询所有知识库信息  -->
+    <select id="getKnowledgeList" resultType="com.mybatis.entity.Knowcenter">
+        select id,title,content,keyword,filepath,userid,operatetime from knowledge where 1=1
+        <if test="title != null and title !=''">        	
+        	 and title like #{title}"%"
+        </if>
+        <if test="keyword != null and keyword !=''">        	
+        	 and keyword like "%"#{keyword}"%"
+        </if>        
+        and id>= (select id FROM knowledge ORDER BY id LIMIT #{rowStart}, 1) LIMIT #{pageSize}
+        <!-- order by id desc limit #{rowStart},#{pageSize}   -->      
+    </select>
+    
+	<!-- 添加数据 -->
+    <insert id="insertKnowledge" parameterType="com.mybatis.entity.Knowcenter">
+        insert into knowledge(title,content,keyword,filepath,userid) value (#{title},#{content},#{keyword},#{filepath},#{userid})
+    </insert>
+    
+    <!-- 修改知识库信息 -->
+    <update id="updateKnowledge" parameterType="com.mybatis.entity.Knowcenter">
+        update knowledge 
+        <trim prefix="set" suffixOverrides=",">
+        <if test="title != null and title !=''">
+        	title=#{title},
+        </if>
+        <if test="content != null and content !=''">
+        	content=#{content},
+        </if>
+        <if test="keyword != null and keyword !=''">
+        	keyword=#{keyword},
+        </if>
+        <if test="filepath != null and filepath !=''">
+        	filepath=#{filepath},
+        </if>
+        </trim>
+        where id=#{id}
+    </update>
+    
+    <!-- 根据id删除数据 -->
+    <delete id="delKnowledge" parameterType="int">
+        delete from knowledge where id = #{id}
+    </delete>
+    
+    <!-- 查询最新的10条记录  -->
+    <!-- 根据id查询知识库信息 -->
+	<select id="getKnowledge" resultType="com.mybatis.entity.Knowcenter">
+        select id,title,keyword,userid from knowledge order by id desc
+    </select>
+</mapper>

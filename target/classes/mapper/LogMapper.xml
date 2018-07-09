@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的 -->
+<mapper namespace="com.mybatis.mapper.LogDao">
+    
+	<!-- 添加数据 -->
+    <insert id="insertLog" parameterType="com.mybatis.entity.Logoperate">
+        insert into logoperation(userid,content) value (#{userid},#{content})
+    </insert>
+     
+    <!-- 计算有多少记录  -->
+    <select id="getCountSqlwhere" parameterType="com.mybatis.entity.Logoperate" resultType="int">
+    	select count(*) from logoperation where 1=1
+    	<if test="userid != null and userid !=''">        	
+        	 and userid like "%"#{userid}"%"
+        </if>
+        <if test="content != null and content !=''">        	
+        	 and content like "%"#{content}"%"
+        </if>
+    </select> 
+    
+    <!-- 分页+判断条件  -->
+	<select id="getLogPagerContent" resultType="com.mybatis.entity.Logoperate">
+        select * from logoperation where 1=1
+        <if test="userid != null and userid !=''">        	
+        	 and userid like "%"#{userid}"%"
+        </if>
+        <if test="content != null and content !=''">        	
+        	 and content like "%"#{content}"%"
+        </if>
+        and id>= (select id FROM logoperation ORDER BY id LIMIT #{rowStart}, 1) LIMIT #{pageSize}
+        <!-- order by id desc limit #{rowStart},#{pageSize}   -->
+    </select>
+    
+</mapper>

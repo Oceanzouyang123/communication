@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>manageDept</title>
+    <!-- Bootstrap Core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+    
+</head>
+
+<body>
+    <div id="wrapper">
+		<!-- Navigation引入头部公共页面 -->
+		<div th:include="head :: headContent"></div>
+		<!-- 左侧导航栏引入 -->
+		<div th:include="sidebar :: sidebarContent"></div>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">知识库模板管理</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                        	新增或修改知识库模板
+                        	
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body" >
+                            <div class="row">
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">
+                            			<lable>标题</lable>:
+                            			<input class="form-control" id="title" style="width:200px;" type="text" value="">
+                            		</div>
+                            	</div>
+                            </div>
+                            <br/>
+                            <div class="row">
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">
+                            			<lable>内容</lable>:
+       									<div class="adjoined-bottom">
+											<div class="grid-container">
+												<div class="grid-width-100">
+													<div id="editor">
+				
+													</div>
+												</div>
+											</div>
+										</div>
+                            		</div>
+                            	</div>
+                            </div>
+                            <br/>
+                            <div class="col-lg-7">
+                            	<button class="btn btn-default" id="btn" type="submit">提交</button>
+                            	<button class="btn btn-default" id="reset" type="reset">重置</button>
+                            </div>
+                        </div>                      
+                    </div>	
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<!-- FastClick -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<!-- DataTables JavaScript -->
+<script th:src="@{/ckeditor/ckeditor.js}"></script>
+<script th:src="@{/ckeditor/samples/js/sample.js}"></script>
+<!--script th:src="@{/js/bootstrap3-wysihtml5.all.min.js}"></script-->
+<script type="text/javascript">
+$(function(){
+	//查询部门
+	//pager();//获取修改部门信息
+	 //CKEDITOR.replace('editor1');
+    //bootstrap WYSIHTML5 - text editor
+    //$('.textarea').wysihtml5();
+})
+    initSample();
+</script>
+</html>

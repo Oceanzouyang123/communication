@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的 -->
+<mapper namespace="com.mybatis.mapper.RoleTableDao">
+
+	<!-- 根据id查询表权限信息 -->
+	<select id="getRoleTableById" parameterType="int" resultType="com.mybatis.entity.RoleTable">
+        select id,tablecn,tablepy,dept,userid,type from roletable where id=#{id}
+    </select>
+    
+    <!-- 根据部门查询表权限信息 -->
+	<select id="getRoleTableByDept" resultType="com.mybatis.entity.RoleTable">
+        <!--select id,tablecn,tablepy,dept,userid from roletable where dept=#{dept}-->
+        select id,tablecn,tablepy,dept,userid,type from roletable where 1=1 
+        <if test="tablecn != null and tablecn !=''">        	
+        	and tablecn like "%"#{tablecn}"%"
+        </if> 
+        and find_in_set(#{dept},role) and type=#{type}
+    </select>
+    
+    <!-- getRoleTableByTablePY -->
+    <select id="getRoleTableByTablePY" resultType="com.mybatis.entity.RoleTable">
+        select id,tablecn,tablepy,dept,userid,type from roletable where tablepy=#{tablepy} and type=#{type}
+    </select>
+    
+    <!-- getRoleTableByTableCN -->
+    <select id="getRoleTableByTableCN" resultType="com.mybatis.entity.RoleTable">
+        select id,tablecn,tablepy,dept,userid,type from roletable where tablecn=#{tablecn} and type=#{type}
+    </select>
+    
+    <!-- 查询所有表权限信息  -->
+    <select id="getRoleTableList" resultType="com.mybatis.entity.RoleTable">
+        select id,tablecn,tablepy,dept,userid,type from roletable       
+    </select>
+    
+	<!-- 添加数据 -->
+    <insert id="insertRoleTable" parameterType="com.mybatis.entity.RoleTable">
+        insert into roletable(tablecn,tablepy,dept,userid,type) value (#{tablecn},#{tablepy},#{dept},#{userid},#{type})
+    </insert>
+    
+    <!-- 修改表权限信息 -->
+    <update id="updateRoleTable" parameterType="com.mybatis.entity.RoleTable">
+        update roletable set dept=#{dept} where id=#{id}
+    </update>
+    
+    <!-- 根据id删除数据 -->
+    <delete id="delRoleTable" parameterType="int">
+        delete from roletable where id = #{id}
+    </delete>
+    
+    <!-- 根据中文表名和表单类型查询  -->
+    <select id="getRoleTableByType" resultType="com.mybatis.entity.RoleTable">
+        select id,tablecn,tablepy,dept,userid,type from roletable where 1=1
+        <if test="tablecn != null and tablecn !=''">        	
+        	and tablecn like "%"#{tablecn}"%"
+        </if> 
+        <if test="type != null and type !=''">        	
+        	and type=#{type}
+        </if>
+        <if test="role != null and role !=''">        	
+        	and find_in_set(#{role},role)
+        </if>
+    </select>
+    
+</mapper>

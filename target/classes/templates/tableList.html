@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>tablelist</title>
+    <!-- Bootstrap Core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link th:href="@{/css/dataTables.bootstrap.css}" rel="stylesheet">
+    <!-- DataTables Responsive CSS -->
+    <link th:href="@{/css/dataTables.responsive.css}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+		<!-- Navigation引入头部公共页面 -->
+		<div th:include="head :: headContent"></div>
+		<!-- 左侧导航栏引入 -->
+		<div th:include="sidebar :: sidebarContent"></div>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">表单</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+							数据查询结果
+                        </div>
+                        <div class="panel-body">
+                        	<div class="col-lg-2">
+                        	<input class="form-control" placeholder="运单号" id="billno"></input>
+                        </div>
+                        <div class="col-lg-2">	
+                        	<select class="form-control" id="producttype">
+                            </select>	
+                        </div>
+                        <div class="col-lg-2">	
+                        	<select class="form-control" id="destination">
+                            </select>	
+                        </div>
+                        <div class="col-lg-2">
+                        	<button class="btn btn-default" id="queryAll">搜索</button>
+                        </div>
+                        </div>
+
+                        <!-- /.panel-heading -->
+                        <div class="panel-body" id="tableContent">
+                            <!--table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+                            </table-->
+                        </div>
+                        <!-- /.panel-body -->
+                        
+                    </div>
+        <!-- 月结算清单分页列表 -->
+  		<div style="padding-top: 10px;margin-left: 1%;width:60%;display:none;" id="pager">
+			<button class="btn btn-default" id="billshouye" style="cursor: pointer;">首页</button>
+			<button class="btn btn-default" id="billfront" style="cursor: pointer;">上一页</button>
+			<button class="btn btn-default" id="billnext" style="cursor: pointer;">下一页</button>
+			<button class="btn btn-default" id="billweiye" style="cursor: pointer;">尾页</button>
+			&nbsp;
+			<label class="billdangqian"></label>
+			<label class="billgong"></label>
+			<label class="billNum"></label>
+		</div>	
+  		<div style="display: none;">
+			<input type="text" id="billcountPage" value="15"></input>
+			<input type="text" id="billcurrentPage" value="1"></input>
+		</div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<!-- DataTables JavaScript -->
+<script th:src="@{/js/jquery.dataTables.min.js}"></script>
+<script th:src="@{/js/dataTables.bootstrap.min.js}"></script>
+<script th:src="@{/js/dataTables.responsive.js}"></script>
+<script type="text/javascript">
+$(function(){
+	pager();//分页
+	productTypeSelect();//获取产品类型下拉列表
+	getDestination();//获取目的地下来列表
+})
+    $(document).ready(function() {
+    	//bootstrap自动分页插件
+        /* $('#dataTables-example').DataTable({
+            responsive: true
+        }); */
+    });
+    
+    //获取产品类型下拉列表
+    function productTypeSelect(){
+    	$.ajax({
+    		url:"/productTypeSelect",
+    		type:"post",
+    		success: function(result){
+    			$("#producttype").empty(); 
+    			$("#producttype").append("<option value='所有类型'>所有类型</option>");
+    			$.each(result[0].productType, function (i, n)
+    	    	{
+    				//console.log(n.producttype);
+    				$("#producttype").append("<option value="+n.producttype+">"+n.producttype+"</option>");
+    	    	});
+    		}
+    	});
+    }
+    
+    //获取目的地下拉列表 
+    function getDestination(){
+    	$.ajax({
+    		url:"/getDestination",
+    		type:"post",
+    		success: function(result){
+    			$("#destination").empty(); 
+    			$("#destination").append("<option value='目的地'>目的地</option>");
+    			$.each(result[0].data, function (i, n)
+    	    	{
+    	    		//console.log(n.producttype);
+    	    		$("#destination").append("<option value="+n.destination+">"+n.destination+"</option>");
+    	    	});
+    		}
+    	});
+    }
+/*     
+    //点击选中下拉列表获取值
+    $("#producttype").change(function(){
+    	console.log($("#producttype").val());
+    });
+     */
+    //所有参数组合查询
+	$("#queryAll").click(function(){
+		$("#billcurrentPage").val(1);
+		pager();
+	});
+    
+    //分页
+    function pager(){
+		var billList = "";
+	    var billTitle = "<thead><tr><td>运单号</td><td>计费重量</td><td>产品类型</td><td>费用</td><td>折扣</td><td>目的地</td></tr></thead>";
+	    $.ajax({
+			url:"/getMonthbillContentSqlWhere",
+			data:{billno:$.trim($("#billno").val()),currentPage:$("#billcurrentPage").val(),producttype:$("#producttype").val(),destination:$("#destination").val()},
+			type:"post",
+			success: function(result){
+    			$("#billcountPage").val(result[0].billcountPage);
+    			$("#billcurrentPage").val(result[0].billcurrentPage);
+    			//console.log(result[0].billcountPage+"--"+result[0].billcurrentPage);
+    			$.each(result[0].data, function (i, n)
+    			{
+    				billList = billList+"<tr><td>"+n.billno+"</td><td>"+n.chargedweight+"</td><td>"+n.producttype+"</td><td>"+n.price+"</td><td>"+n.discount+"</td><td>"+n.destination+"</td></tr>";
+    				//console.log(n.billno+"--"+n.chargedweight+"--"+n.producttype+"--"+n.price+"--"+n.discount+"--"+n.destination);		
+    			});
+    			billList = billTitle+"<tbody>"+billList+"</tbody>";
+    			$("#tableContent").html("<table class='table table-striped table-bordered table-hover'>"+billList+"</table>");
+    			$("#pager").show();
+    			$(".billdangqian").html("当前第:"+result[0].billcurrentPage+"页");
+          		$(".billgong").html("共:"+result[0].billcountPage+"页");
+          		$(".billNum").html("共:"+result[0].billNum+"条记录");
+			}
+		});
+    }
+    
+  	//首页、上一页、下一页、尾页 
+    $(".btn").click(function(){
+    	//alert($(this).attr("id"));
+    	if($(this).attr("id")=="billshouye"){
+    		$("#billcurrentPage").val(1);
+    	}else if($(this).attr("id")=="billweiye"){
+    		$("#billcurrentPage").val($("#billcountPage").val());
+    	}else if($(this).attr("id")=="billfront"){
+    		var ye = parseInt($("#billcurrentPage").val())-1;
+    		if(ye-1<0){
+    			alert("已经是第一页");
+    			return false;
+    		}
+    		$("#billcurrentPage").val(ye);
+    	}else if($(this).attr("id")=="billnext"){
+    		var ye = parseInt($("#billcurrentPage").val())+1;
+    		var count = parseInt($("#billcountPage").val());
+    		if(ye>count){
+    			alert("已经是最后一页");
+    			return false;
+    		}
+    		$("#billcurrentPage").val(ye);
+    	}
+    	pager();
+    }); 
+</script>
+</html>

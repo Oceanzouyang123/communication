@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <!-- Bootstrap Core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+</head>
+<body>
+    <div id="wrapper">
+        <!-- Navigation引入头部公共页面 -->
+		<div th:include="head :: headContent"></div>
+		<!-- 左侧导航栏引入 -->
+		<div th:include="sidebar :: sidebarContent"></div>
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">创建临时需求表单</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                        	标题:
+                        	<a id="getById" th:text="${demandId}" style="display:none;"></a>
+                        	<a id="getDemandTable" th:text="${demandTable}" style="display:none;"></a>
+                            <input type="text" placeholder="表单名称" id="content" style="width:300px;">
+                            <input type="text" placeholder="拼音" id="result" style="width:300px;display:none;">
+                            <input type="text" id="getById" style="display:none;"></input>
+                            <input type="text" id="versionControl" style="display:none;"></input>
+                            <input class="btn btn-default" style="display:none;" id="conv" type="button" value="转换成拼音" onclick="trans();"/>
+                            <input type="button" class="btn btn-default" id="tableName" value="校验表"></input>
+                        	<!--button class="btn btn-info" type="button" data-toggle="tooltip" title="新增" id="addSaltIpGrpBtn">
+                        		<span class="glyphicon glyphicon-plus"></span>
+                        	</button-->
+                        	<button title="新增" class="btn btn-info" type="button" data-toggle="tooltip" id="addSaltIpGrpBtn">
+                  				<i class="fa fa-plus"></i>
+                  			</button>
+                  			<button id="radioadd" class="btn btn-info">单选</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-8"> 
+                                    <div class="form-inline">
+                                    	<!--input class="form-control"></input-->                                           
+                    					<input type="text" value="评审部门" class="form-control" readonly="readonly" style="width:300px;">:
+                    					<input type="text" class="form-control" id="role" style="width:300px;display:none;">
+                    					<select class="form-control" id="dept" style="width:300px;">
+                            			</select>
+                                    </div>
+                                    <br/>   
+                                    <div class="form-inline">
+                                    	<!--input class="form-control"></input-->                                           
+                    					<input type="text" value="可见部门" class="form-control" readonly="readonly" style="width:300px;">:
+                    					<input type="text" class="form-control" id="roletable" style="width:300px;display:none;">
+                    					<lable id="depttable"></lable>
+                                    </div>
+                                    <br/>             						
+                                </div>                  
+                             </div>
+                                <div class="col-lg-7">
+                  					<button type="submit" class="btn btn-default" id="add">提交</button>
+                                    <button type="reset" class="btn btn-default" id="reset">重置</button>
+                                </div>
+                            </div>
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /#page-wrapper -->
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<script th:src="@{/js/pinyin.js}"></script>
+<script type="text/javascript">
+var colid = 0;//增加列的统计
+var updateCount = 0;//修改时获取已经存在的列 
+var columnName = "";//key
+var valueName = "";//value
+var column = "";//字段
+var updateNum = 2;//修改时获取当前表的列数
+//页面加载
+$(function(){
+	//如果获取的id不空则修改，如果为空表示新增
+	getTableById();	
+	/* $("#content").live("keyup keydown change blur",function (){
+		$("#result").val($(this).toPinyin());
+	}); */
+	getDept();//获取部门权限
+	getDepttable();//
+});
+
+//获取部门下拉列表 
+function getDept(){
+	$.ajax({
+		url:"/queryDept",
+		type:"post",
+		success: function(result){
+			$("#dept").empty(); 
+			$.each(result[0].data, function (i, n)
+	    	{
+	    		//console.log(n.producttype);
+	    		if(i==0){
+	    			$("#role").val(n.name);
+	    		}
+	    		$("#dept").append("<option value="+n.name+">"+n.name+"</option>");
+	    	});
+		}
+	});
+}
+
+//点击选中下拉列表获取值
+$("#dept").change(function(){
+	console.log($("#dept").val());
+	$("#role").val($("#dept").val());
+});
+//新增列input text
+$("#addSaltIpGrpBtn").click(function(){
+	colid = colid + 1;
+	var add = "<div id="+colid+"><div class='form-inline'><input type='text' value='名称' class='form-control' style='width:300px;'>:<input type='text' value='' class='form-control' style='width:300px;'> <button class='btn btn-info' type='button' data-toggle='tooltip' title='删除' id="+colid+" onclick='delSaltIpGrpBtn("+colid+")'><i class='fa fa-minus'></i></button></div><br/></div>";
+	$(".col-lg-8").append(add);
+	//判断input底框颜色
+	$(".form-control").click(function(){
+		if($(this).val()==""){
+			$(this).css("background-color","white");
+		}	
+	});
+});
+
+//新增列input radio
+$("#radioadd").click(function(){
+	if($("#result").val()==""){
+		
+	}else{
+		colid = updateNum;
+	}	
+	colid = colid + 1;
+	var radio = "radio"+colid;
+	var add = "<div id="+colid+"><div class='form-inline'><input type='text' value='单选' class='form-control' style='width:300px;'>:<input type='radio' name='"+radio+"' onclick='radio("+"\""+radio+"\""+",1)' checked>是</input>    <input type='radio' onclick='radio("+"\""+radio+"\""+",2)' name='"+radio+"'>否</input><input type='text' class='"+radio+"' value='是' style='display:none;'></input><button class='btn btn-info' type='button' data-toggle='tooltip' title='删除' id="+colid+" onclick='delSaltIpGrpBtn("+colid+")'><i class='fa fa-minus'></i></button></div><br/></div>";
+	$(".col-lg-8").append(add);	
+});
+
+//选择radio
+function radio(radioClass,value){
+	if(value==1){
+		$("."+radioClass).val("是");
+	}else{
+		$("."+radioClass).val("否");
+	}
+	
+}
+
+
+//删除
+function delSaltIpGrpBtn(id){
+	$("#"+id).detach();
+}
+
+//获取部门下拉列表 
+function getDepttable(){
+	$.ajax({
+		url:"/queryDept",
+		type:"post",
+		async: false,
+		success: function(result){
+			$("#depttable").empty(); 
+			$.each(result[0].data, function (i, n)
+	    	{
+				if(i==0){
+					$("#depttable").append("<input class='check' type='checkbox' value='"+n.name+"' checked></input>"+"&nbsp;"+n.name+"&nbsp;&nbsp;");
+				}else{
+					$("#depttable").append("<input class='check' type='checkbox' value='"+n.name+"'></input>"+"&nbsp;"+n.name+"&nbsp;&nbsp;");
+				}				
+	    	});
+			console.log(result[0].data[0].name+"==部门");
+			$("#roletable").val(result[0].data[0].name);
+			
+		}
+	});
+}
+
+//点击选中checkbox获取值
+$("#depttable").change(function(){
+	var chooseValue = "";
+	$(".check").each(function(){
+		//$(this).attr("checked",false);		
+		if($(this).prop('checked')){
+			chooseValue = chooseValue + $(this).val() +","
+		}
+	});
+	if(chooseValue.length>0){
+		chooseValue = chooseValue.substring(0,chooseValue.length-1);
+	}
+	$("#roletable").val(chooseValue);
+	//alert(chooseValue);
+	$("#depttable").val(chooseValue);
+});
+
+//提交   动态建表
+$("#add").click(function(){
+	if($("#getById").val()==""){
+		if(!isNaN($("#content").val())){
+			alert("标题不能是纯数字");
+			return false;
+		}
+		var tableC = Trim($("#content").val(),"g");
+		$.ajax({
+			url:"/QueryRoleTableName",
+			type:"post",
+			data:{tablenamecn:tableC},
+			success: function(result){
+				if(result==0){
+					//点击提交时，再获取一次表名的拼音
+					var tableP = Trim($("#result").val(),"g");
+					$("#result").val(tableP);
+					add();
+				}else{
+					alert("该表已经存在~~");
+					return false;
+				}
+			}
+		});		
+	}else{
+		update();
+	}
+
+})
+
+//新增动态表
+function add(){
+	var count = 0;//判断是否有参数为空
+	var i = 1;
+	var num = 1;	
+	var columnId = "";//拼接字段列名
+	var columnName = "";//拼接字段名
+	var insertColumnName =""//拼接字段名(不带 varchar(200) DEFAULT NULL,)
+	var columnValue = "";//拼接字段内容
+	var $tableName = $.trim($("#content").val());
+	var $tablePY = $.trim($("#result").val());
+	if($tableName==''||$tablePY==''){
+		alert("表名不能为空~~");
+	}else{		
+		$(".col-lg-8 input[type='text']").each(function(){	
+		    var $content = $.trim($(this).val());
+		    if($content==''){
+		    	$(this).css("background-color","#FFB7DD");
+		    	count = 1;
+		    }
+		    if(i%2 ==0){
+		    	console.log($content+"shuang");
+		    	columnValue = columnValue + "\""+$content+"\""+",";
+		    }else{
+		    	console.log($content+"dan"+"=="+i);
+		    	if($content!="id"){
+		    		if(i==1){
+		    			columnId = columnId + " role varchar(100) DEFAULT NULL,";
+		    			insertColumnName = insertColumnName +" role,";
+		    		}else if(i==3){
+		    			columnId = columnId + " dept varchar(500) DEFAULT NULL,";
+		    			insertColumnName = insertColumnName +" dept,";
+		    		}else{
+		    			columnId = columnId + $("#result").val()+num+" varchar(200) DEFAULT NULL,";
+				    	insertColumnName = insertColumnName + $("#result").val()+num+",";				    	
+		    		}			    	
+			    	columnName = columnName + "\""+$content+"\""+",";
+			    	num++;
+		    	}		    	
+		    }
+		    i++;
+		    //计算字段列数
+		});
+		if(count==0){
+			//建表
+  			$.ajax({
+				url :"/CreateTable",				
+				data:{tablePY:$tablePY,columnId:columnId},
+				type:"post",
+				success :function(result){
+					//alert("columnName=="+columnName);
+					//alert("columnId=="+columnId);
+					//alert("insertColumnName=="+insertColumnName);
+					//alert("columnValue=="+columnValue);
+					insertColumnName = insertColumnName.substring(0,insertColumnName.length-1);
+					columnValue = columnValue.substring(0,columnValue.length-1);
+					var insertDemandSql = "(versionControl,status,"+insertColumnName+") values ('1','发起',"+columnValue+")";//插入临时需求表单
+					var insertWordbookSql="";//插入字典表
+					var insertColumnNameSplit = insertColumnName.split(",");
+					var columnNameSplit = columnName.split(",");
+					//拼接字典表参数
+					for(var c=0;c<columnNameSplit.length-1;c++){
+						insertWordbookSql = insertWordbookSql + "('"+$tableName+"','"+$tablePY+"',"+columnNameSplit[c]+",'"+insertColumnNameSplit[c]+"'),";
+					}
+					insertWordbookSql = insertWordbookSql.substring(0,insertWordbookSql.length-1);
+					$.ajax({
+						url:"/insertDemandTable",//插入临时需求表单
+						type:"post",
+						data:{tablenamecn:$tableName,tablenamepy:$tablePY,insertSql:insertDemandSql,insertWordbook:insertWordbookSql,dept:$("#dept").val(),chooseValue:$("#roletable").val()},
+						success :function(result){
+							location.href="/DataTableHtml?newtable="+$tablePY+"&dept=''";//插入数据后跳转页面
+						}
+					});
+				}
+			});
+		}else{
+			alert("参数不能为空~~");
+		}
+	}
+}
+
+//修改动态表
+function update(){
+	var count = 0;//判断是否有参数为空
+	//先alter增加表的列，然后update数据
+	var oldColumn = column;
+	var oldColumnName = columnName;
+	var oldValueName = valueName; 
+	//对比修改前后的字段数量和内容
+	var newColumn = "";
+	var newColumnName = "";
+	var newValueName = "";
+	var valueContent = "";
+	var list = "";
+	var i = 1;
+	var compareCount = 0;
+	var oldColumnSplit = oldColumn.split(",");
+	$(".col-lg-8 input[type='text']").each(function(){
+		var $content = $.trim($(this).val());
+		if($content==''){
+	    	count = 1;
+	    }
+		if(i%2 ==0){
+	    	console.log($content+"shuang");
+	    	valueContent = valueContent + "\""+$content+"\""+"ψ";
+	    }else{
+	    	console.log($content+"dan"+i);
+	    	//+4是排除表的中文和拼音
+	    	if(i>oldColumnSplit.length*2){
+	    		newColumnName = newColumnName + "\""+$content+"\""+"ψ";
+	    	}    	
+	    	compareCount++;
+	    }
+		i++;
+	});	
+	valueContent = valueContent.substring(0,valueContent.length-1);
+	//alert("旧列的数量=="+oldColumnSplit.length);
+	//alert("新列的数量=="+compareCount);
+	//alert("旧列的名称"+oldColumn);
+	//拼接旧列和新列的名称
+	var connect = "";
+	for(var i=oldColumnSplit.length;i<compareCount;i++){
+		connect = connect + $("#result").val()+i+",";
+	}
+	console.log("list=="+list+"--参数不能为空--"+count);
+	if(count==0){
+		if(oldColumnSplit.length==compareCount){
+			//拼接update语句
+			var valueContentSplit = valueContent.split("ψ");
+			for(var u=0;u<oldColumnSplit.length;u++){
+				list = list + oldColumnSplit[u]+"="+valueContentSplit[u]+",";
+			}			
+			list = list.substring(0,list.length-1);
+			var versionControl = parseInt($("#versionControl").val()) + 1;
+			list = list + ",versionControl='"+versionControl+"'";
+			//alert("没有增加新的列"+list);
+			//给表增加列alter
+			updateDemandById($("#result").val(),list,$("#getById").val(),$("#versionControl").val());			
+		}else{
+			newColumn = oldColumn +","+ connect;//拼接旧的和新的列
+			newColumn = newColumn.substring(0,newColumn.length-1);
+			var newColumnSplit = newColumn.split(",");
+			var valueContentSplit = valueContent.split("ψ");
+			for(var u=0;u<newColumnSplit.length;u++){
+				list = list+newColumnSplit[u]+"="+valueContentSplit[u]+",";
+			}			
+			var versionControl = parseInt($("#versionControl").val()) + 1;
+			list = list.substring(0,list.length-1);
+			list = list + ",versionControl='"+versionControl+"'";
+			//alert("增加了新的列"+list);
+			//给表增加列alter
+			alterTable($("#result").val(),oldColumnSplit.length,compareCount);
+			//更新表数据
+			updateDemandById($("#result").val(),list,$("#getById").val(),$("#versionControl").val());
+			//插入字典表	
+			connect = connect.substring(0,connect.length-1);//列拼音
+			newColumnName = newColumnName.substring(0,newColumnName.length-1);//列中文
+			var connectSplit = connect.split(",");
+			//alert("connect=="+connect);
+			var newColumnNameSplit = newColumnName.split("ψ");			
+			//alert("newColumnName=="+newColumnName);
+			var workbook = "";
+			//拼接insert语句
+			for(var w=0;w<newColumnNameSplit.length;w++){
+				workbook = workbook+"('"+$("#content").val()+"','"+$("#result").val()+"',"+newColumnNameSplit[w]+",'"+connectSplit[w]+"'),";
+			}
+			workbook = workbook.substring(0,workbook.length-1);
+			insertWorkbook(workbook,$("#result").val(),$("#getById").val());
+		}
+	}else{
+		alert("参数不能为空~~");
+	}
+}
+
+
+//查询表名
+$("#tableName").click(function(){
+	var tableC = Trim($("#content").val(),"g");
+	if(tableC==""||tableC==null){
+		alert("标题不能是纯数字或为空");
+		return false;
+	}
+	if(!isNaN($("#content").val())){
+		alert("标题不能是纯数字或为空");
+		return false;
+	}
+	$.ajax({
+		url:"/QueryRoleTableName",
+		type:"post",
+		data:{tablenamecn:tableC},
+		success: function(result){
+			if(result>0){
+				alert("该名称已经存在~~");
+				return false;
+			}else{
+				alert("名称可用~~");
+			}
+		}
+	});
+});
+
+//根据id获取临时需求表单 
+function getTableById(){
+	$.ajax({
+		url:"/demandById",
+		type:"post",
+		data: {tablename:$("#getDemandTable").text(),id:$("#getById").text()},
+		success :function(result){
+			if(result==""){
+				//alert("空");
+			}else{
+				//alert(result);
+				//查询字典表
+				queryTableWorkbook(result);
+			}			
+		}
+	});
+}
+
+//根据表名查询表(需要查询字典表和tablename表拼接)
+function queryTableWorkbook(result){
+	var parsedJson = jQuery.parseJSON(result); 
+	var valueCount = 0;	
+	for(var i=0,l=parsedJson.length;i<l;i++){
+		for(var key in parsedJson[i]){
+			//console.log(key+':'+parsedJson[i][key]+"==");
+			if(key=="id"){
+				$("#getById").val(parsedJson[i][key]);
+			}
+			if(key=="versionControl"){
+				$("#versionControl").val(parsedJson[i][key]);
+			}
+			if(key=="role"){
+				$("#role").val(parsedJson[i][key]);
+			}
+			if(key=="dept"){
+				$("#roletable").val(parsedJson[i][key]);
+			}
+			if(valueCount>2){
+				valueName = valueName + parsedJson[i][key]+"&";
+				column = column + key +",";
+				updateCount++;
+			}	
+			valueCount++;
+		}		
+	}
+	valueName = valueName.substring(0,valueName.length-1);
+	column = column.substring(0,column.length-1);
+	colid=updateCount-1;
+	//查询字典表
+	$.ajax({
+		url :"/QueryAllTableWorkbook",
+		type:"post",
+		data:{tablename:$("#getDemandTable").text()},
+		async: false,
+		success :function(result){
+			//获取表名中文和拼音
+			$("#content").val(result[0].data[0].tablenamecn);
+			$("#content").attr("readonly","disabled");
+			$("#result").val(result[0].data[0].tablenamepy);
+			$("#result").attr("readonly","disabled");
+			$.each(result[0].data, function (i, n){
+				//console.log(n.tablenamecn+"--"+n.columnnamecn);   				
+				if(i>1){
+					//alert(n.columnnamecn+"--"+n.columnnamepy);
+					columnName = columnName + n.columnnamecn+",";
+				}   		
+			});
+			columnName = columnName.substring(0,columnName.length-1);
+			//alert(valueName);
+			//alert(columnName);
+			//alert(column);
+			//拼接参数名称和内容 
+			var splitContent = columnName.split(",");
+			var val = valueName.split("&");
+			var columnV = column.split(",");
+			var dept = $("#roletable").val();
+			//$(".col-lg-8").html("");//清空所有新增标签
+			var colid = 1;
+			for(var i=2;i < splitContent.length;i++){//i=2表示跳过评审部门和可见部门，使用新增的默认标签
+				updateNum = updateNum + 1;
+				colid = colid+i;
+				if(val[i]=="是"){
+					add = "<div><div class='form-inline'><input id="+columnV[i]+" readonly='readonly' type='text' value='"+splitContent[i]+"' class='form-control' style='width:300px;'>:<input type='radio' onclick='radio("+"\""+columnV[i]+"\""+",1)' value='是' name='"+columnV[i]+"' checked>是</input><input type='radio' onclick='radio("+"\""+columnV[i]+"\""+",2)' value='否' name='"+columnV[i]+"'>否</input><input type='text' class='"+columnV[i]+"' value='是' style='display:none;'></div><br/></div>";
+				}else if(val[i]=="否"){
+					add = "<div><div class='form-inline'><input id="+columnV[i]+" readonly='readonly' type='text' value='"+splitContent[i]+"' class='form-control' style='width:300px;'>:<input type='radio' onclick='radio("+"\""+columnV[i]+"\""+",1)' value='是' name='"+columnV[i]+"'>是</input><input type='radio' onclick='radio("+"\""+columnV[i]+"\""+",2)' value='否' name='"+columnV[i]+"' checked>否</input><input type='text' class='"+columnV[i]+"' value='否' style='display:none;'></div><br/></div>";
+				}else{
+					add = "<div><div class='form-inline'><input id="+columnV[i]+" readonly='readonly' type='text' value='"+splitContent[i]+"' class='form-control' style='width:300px;'>:<input type='text' value='"+val[i]+"' class='form-control' style='width:300px;'></div><br/></div>";
+				}
+			
+				$(".col-lg-8").append(add);
+			} 
+			//将权限checkbox勾选出来
+			$(".check").each(function(){
+				if(dept.indexOf($(this).val())!=-1){
+					$(this).prop("checked","checked");
+				}
+			});
+		}
+	});
+	//判断当前登录用户是否属于该条记录的评审部门
+	if($("#userDept").val()!=$("#role").val()){
+		$("#add").attr('disabled',true);
+	}
+}
+
+//修改表结构的列
+function alterTable(tablename,startc,endc){
+	//alert("进入修改列--"+tablename+"--"+startc+"--"+endc);
+	$.ajax({
+		url:"/alterDemandByTable",
+		type:"post",
+		data:{tablename:tablename,start:startc,end:endc},
+		success :function(){
+			
+		}
+	});
+}
+
+//修改临时需求表单数据
+function updateDemandById(tablename,list,getid,versionControl){
+	//alert("进入修改数据--"+tabulename+"--"+startc+"--"+endc);
+	$.ajax({
+		url:"/updateDemandById",
+		type:"post",
+		data:{tablename:tablename,canshu:list,id:getid,version:versionControl,dept:$("#role").val(),chooseValue:$("#roletable").val()},
+		success :function(result){
+			if(result==0){
+				alert("不是最新数据,更新数据~~");
+				window.location.reload();
+			}else{
+				alert("修改成功~~");
+				location.href="/demandTableDetial?tablename="+tablename;
+			}
+		}
+	});
+}
+
+//插入字典表
+function insertWorkbook(workbook,tablename,getid){
+	$.ajax({
+		url:"/insertWorkbookById",
+		data:{canshu:workbook,tablename:tablename,id:getid},
+		type:"post",
+		success :function(result){
+			if(result>0){
+				location.href="/demandTableDetial?tablename="+tablename;
+			}
+		}
+	});
+}
+
+//重置
+$("#reset").click(function(){
+	window.location.reload();
+});
+
+//将中文表名转换成拼音
+$("#content").blur(function(){	
+	trans();//转换成拼音
+	var tableP = Trim($("#result").val(),"g");
+	$("#result").val(tableP);
+});
+
+//去掉所有空格
+function Trim(str,is_global)
+  {
+   var result;
+   result = str.replace(/(^\s+)|(\s+$)/g,"");
+   if(is_global.toLowerCase()=="g")
+   {
+    result = result.replace(/\s/g,"");
+    }
+   return result;
+}
+
+</script>
+</html>

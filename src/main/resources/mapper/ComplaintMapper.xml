@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的 -->
+<mapper namespace="com.mybatis.mapper.ComplaintDao">
+    
+	<!-- 添加数据 -->
+    <insert id="insertComplaint" parameterType="com.mybatis.entity.Complaint">
+        insert into complaint(userid,content,type,nickname,status,dept) value (#{userid},#{content},#{type},#{nickname},#{status},#{dept})
+    </insert>
+     
+    <!-- 计算有多少记录  -->
+    <select id="getCountSqlwhere" parameterType="com.mybatis.entity.Complaint" resultType="int">
+    	select count(*) from complaint where 1=1 and find_in_set(#{dept},dept)
+    	<if test="nickname != null and nickname !=''">        	
+        	 and nickname like "%"#{nickname}"%"
+        </if>
+        <if test="content != null and content !=''">        	
+        	 and content like "%"#{content}"%"
+        </if>
+        <if test="userid != null and userid !=''">        	
+        	 and userid=#{userid}
+        </if>
+    </select> 
+    
+    <!-- 分页+判断条件  -->
+	<select id="getComplaintPagerContent" resultType="com.mybatis.entity.Complaint">
+        select * from complaint where 1=1 and find_in_set(#{dept},dept) 
+        <if test="nickname != null and nickname !=''">        	
+        	 and nickname like "%"#{nickname}"%"
+        </if>
+        <if test="content != null and content !=''">        	
+        	 and content like "%"#{content}"%"
+        </if>
+        <if test="userid != null and userid !=''">        	
+        	 and userid=#{userid}
+        </if>
+        and id>= (select id FROM complaint ORDER BY id LIMIT #{rowStart}, 1) LIMIT #{pageSize}
+        <!-- order by id desc limit #{rowStart},#{pageSize}   -->
+    </select>
+    
+    <!-- 根据id获取投诉信息  -->
+    <select id="getComplaintById" resultType="com.mybatis.entity.Complaint">
+        select * from complaint where id=#{id}
+    </select>
+    
+    <!-- 根据id修改投诉信息  -->
+    <update id="updateComplaintById" parameterType="com.mybatis.entity.Complaint">
+        update complaint set status=#{status} where id=#{id}
+    </update>
+    
+    <!-- 查询最新的10条投诉记录 -->
+    <select id="getComplaintByTop" resultType="com.mybatis.entity.Complaint">
+        select * from complaint where userid=#{userId} ORDER BY id desc limit 10 ;
+    </select>
+</mapper>

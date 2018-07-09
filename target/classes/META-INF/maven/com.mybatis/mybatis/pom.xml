@@ -1,0 +1,209 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.mybatis</groupId>
+  <artifactId>mybatis</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  
+  <packaging>jar</packaging>
+  
+   <parent>
+	 <groupId>org.springframework.boot</groupId>
+	 <artifactId>spring-boot-starter-parent</artifactId>
+	 <version>1.4.1.RELEASE</version>
+	 <relativePath/><!-- lookup parent from repository -->
+   </parent>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- web 配置这个后可以保持在启动状态  -->
+		<dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-web</artifactId>
+	    </dependency>
+		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+	     <dependency>
+	        <groupId>mysql</groupId>
+	        <artifactId>mysql-connector-java</artifactId>
+	    </dependency>
+		
+		<!-- thymeleaf -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.nekohtml</groupId>
+			<artifactId>nekohtml</artifactId>
+		</dependency>
+		
+		<!-- json -->
+		<dependency>
+    		<groupId>net.sf.ezmorph</groupId>
+    		<artifactId>ezmorph</artifactId>
+    		<version>1.0.6</version>
+		</dependency>   
+    	<dependency>
+    		<groupId>net.sf.json-lib</groupId>
+    		<artifactId>json-lib</artifactId>
+    		<version>2.4</version>  
+			<classifier>jdk15</classifier><!--指定jdk版本-->
+		</dependency>
+		
+		<!-- servlet  -->
+    	<dependency>
+    		<groupId>javax.servlet</groupId>
+    		<artifactId>javax.servlet-api</artifactId>
+    	</dependency>
+    
+    	<!-- 标签库  -->
+    	<dependency>
+    		<groupId>javax.servlet</groupId>
+    		<artifactId>jstl</artifactId>
+    	</dependency>
+    	
+    	<!-- 解析xml -->
+		<dependency>
+    		<groupId>jaxen</groupId>
+    		<artifactId>jaxen</artifactId>
+		</dependency>
+		<dependency>
+    		<groupId>dom4j</groupId>
+    		<artifactId>dom4j</artifactId>
+    		<version>1.6.1</version>
+		</dependency>
+		<!-- wsdl的依赖 -->
+		<dependency>
+    		<groupId>wsdl4j</groupId>
+    		<artifactId>wsdl4j</artifactId>
+		</dependency>
+		
+		<dependency>
+    		<groupId>commons-codec</groupId>
+    		<artifactId>commons-codec</artifactId>
+    		<version>1.6</version>
+		</dependency>
+		
+		<dependency>
+    		<groupId>net.iharder</groupId>
+    		<artifactId>base64</artifactId>
+    		<version>2.3.8</version>
+		</dependency>
+		
+		<!-- 单点登录  -->
+		 <!-- security starter Poms -->  
+        <dependency>  
+            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter-security</artifactId>  
+        </dependency>  
+        <!-- security 对CAS支持 -->  
+        <dependency>  
+            <groupId>org.springframework.security</groupId>  
+            <artifactId>spring-security-cas</artifactId>  
+        </dependency>  
+        <!-- security taglibs -->  
+        <dependency>  
+            <groupId>org.springframework.security</groupId>  
+            <artifactId>spring-security-taglibs</artifactId>  
+        </dependency>  
+        <!-- 热加载 -->  
+        <dependency>  
+            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-devtools</artifactId>  
+            <optional>true</optional>  
+        </dependency>  
+        <dependency>  
+            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-configuration-processor</artifactId>  
+            <optional>true</optional>  
+        </dependency>  
+        
+		<!-- 导入excel  -->
+		<dependency>  
+            <groupId>org.apache.poi</groupId>  
+            <artifactId>poi</artifactId>  
+            <version>3.7</version>  
+        </dependency>  
+        <dependency>  
+      		<groupId>commons-fileupload</groupId>  
+      		<artifactId>commons-fileupload</artifactId>  
+      		<version>1.3.1</version>  
+		</dependency>  
+		<dependency>  
+      		<groupId>commons-io</groupId>  
+      		<artifactId>commons-io</artifactId>  
+      		<version>2.4</version>  
+		</dependency> 
+        <dependency>
+    		<groupId>org.apache.poi</groupId>
+    		<artifactId>poi-ooxml</artifactId>
+    		<version>3.7</version>
+		</dependency>
+        <dependency>
+    		<groupId>net.sourceforge.jexcelapi</groupId>
+    		<artifactId>jxl</artifactId>
+    		<version>2.6.12</version>
+		</dependency>
+		<!-- 日志配置  -->
+		<!--dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-log4j</artifactId>
+    		<version>1.3.8.RELEASE</version>
+		</dependency-->
+		<dependency>
+    		<groupId>log4j</groupId>
+    		<artifactId>log4j</artifactId>
+    		<version>1.2.17</version>
+    	</dependency>
+		<!-- 发送邮件 -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+	</dependencies>
+		
+	<build>
+    <finalName>mybatis</finalName>
+    <plugins>
+		<plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+			<configuration>
+				<fork>true</fork>
+			</configuration>
+		</plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<source>1.8</source>
+				<target>1.8</target>
+			</configuration>
+		</plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-plugin</artifactId>
+			<configuration>
+				<skipTests>true</skipTests>
+			</configuration>	
+		</plugin>
+	</plugins>
+  </build>
+</project>

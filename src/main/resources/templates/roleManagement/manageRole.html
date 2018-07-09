@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>manageDept</title>
+    <!-- Bootstrap Core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link th:href="@{/css/metisMenu.min.css}" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link th:href="@{/css/dataTables.bootstrap.css}" rel="stylesheet">
+    <!-- DataTables Responsive CSS -->
+    <link th:href="@{/css/dataTables.responsive.css}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/sb-admin-2.css}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link th:href="@{/css/font-awesome/css/font-awesome.min.css}" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+		<!-- Navigation引入头部公共页面 -->
+		<div th:include="head :: headContent"></div>
+		<!-- 左侧导航栏引入 -->
+		<div th:include="sidebar :: sidebarContent"></div>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">部门管理</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                        	修改权限<a id="getUserId" th:text="${userid}" style="display:none;"></a>
+                        	<input type="text" id="deptId" style="display:none;"></input>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body" >
+                            <div class="row">
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">
+                            			<lable>用户工号</lable>:
+                            			<input class="form-control" id="userid" readonly="readonly" type="text" value="">
+                            		</div>
+                            		<br/>
+                            	</div>                          	
+                            	<div class="col-lg-8">
+                            		<div class="form-inline">         			
+                            			<lable>部门名称</lable>:
+                            			<select class="form-control" id="dept">
+                            			</select>
+                            			<input type="text" id="selectDept" style="display:none;"></input>
+                            		</div>
+                            	</div>
+                            </div>
+                            <br/>
+                            <div class="col-lg-7">
+                            	<button class="btn btn-default" id="btn" type="submit">提交</button>
+                            	<button class="btn btn-default" id="reset" type="reset">重置</button>
+                            </div>
+                        </div>                      
+                    </div>	
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!-- Metis Menu Plugin JavaScript -->
+<script th:src="@{/js/metisMenu.min.js}"></script>
+<!-- Custom Theme JavaScript -->
+<script th:src="@{/js/sb-admin-2.js}"></script>
+<!-- DataTables JavaScript -->
+<script th:src="@{/js/jquery.dataTables.min.js}"></script>
+<script th:src="@{/js/dataTables.bootstrap.min.js}"></script>
+<script th:src="@{/js/dataTables.responsive.js}"></script>
+<script type="text/javascript">
+$(function(){	
+	pager();//获取修改部门信息
+})
+    $(document).ready(function() {
+    	//bootstrap自动分页插件
+        /* $('#dataTables-example').DataTable({
+            responsive: true
+        }); */
+    });
+    
+    //根据id查询用户信息
+    function pager(){
+    	$.ajax({
+    		url :"/getUserById",
+    		type:"post",
+    		data:{id:$("#getUserId").text()},
+    		async:false,
+    		success :function(result){
+     			$.each(result[0].data, function (i, n){
+     				console.log(n.id+"--"+n.userId+"--"+n.dept);
+     				$("#userid").val(n.userId);
+     				$("#selectDept").val(n.dept); 			 				
+    			});
+     			getDept();//查询部门
+    		}
+    	});
+    }
+
+    //获取部门列表
+    function getDept(){
+    	$.ajax({
+    		url:"/queryDept",
+    		type:"post",
+    		success: function(result){
+    			$("#dept").empty(); 
+    			$("#dept").append("<option value=''></option>");
+    			$.each(result[0].data, function (i, n)
+    	    	{
+    	    		$("#dept").append("<option value="+n.name+">"+n.name+"</option>");
+    	    	});
+    			if($("#selectDept").val()==""){
+    				
+    			}else{
+    				$("#dept").find("option:contains('"+$("#selectDept").val()+"')").attr("selected",true);
+    			}   			
+    		}
+    	});
+    }
+    
+    //重置
+    $("#reset").click(function(){
+    	window.location.reload();
+    });
+    
+    //提交
+    $("#btn").click(function(){
+		$.ajax({
+			url:"/updateUser",
+			type:"post",
+			data:{id:$("#getUserId").text(),dept:$("#dept").val()},
+			success :function(result){
+				if(result==1){
+					alert("修改成功~~");
+					location.href="/roleManagementHtml";
+				}
+			}
+		});  	
+    });
+</script>
+</html>
